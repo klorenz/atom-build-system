@@ -1,0 +1,24 @@
+{
+  "name": "atom-build-system",
+  "version": "0.0.0",
+  "description": "Shared Atom Build System Classes",
+  "main": "main.js",
+  "scripts": {
+    "test": "cake test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:klorenz/atom-build-system"
+  },
+  "keywords": [
+    "atom",
+    "build-system",
+    "build"
+  ],
+  "author": "Kay-Uwe (Kiwi) Lorenz <franka.dyndns.org> (http://quelltexter.org)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/klorenz/atom-build-system/issues"
+  },
+  "homepage": "https://github.com/klorenz/atom-build-system"
+}
