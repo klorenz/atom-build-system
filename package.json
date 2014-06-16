@@ -1,6 +1,6 @@
 {
   "name": "atom-build-system",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared Atom Build System Classes",
   "main": "main.js",
   "scripts": {
@@ -19,6 +19,9 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/klorenz/atom-build-system/issues"
+  },
+  "dependencies": {
+    "underscore": "~1.6.0"
   },
   "homepage": "https://github.com/klorenz/atom-build-system"
 }

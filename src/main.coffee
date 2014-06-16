@@ -3,11 +3,12 @@ fs = require 'fs'
 _ = require 'underscore'
 
 ###
-Base class for BuildTargets provider.
+If you have a build system like make, cake, rake, you usually have multiple
+targets, which result in "multiple build systems".  These
 
 Derive your build targets providers from this class.
 ###
-class BuildTargetsProvider
+class BuildCommandProvider
 
   # may be null, a string or a list of build files relative to root of current
   # project
@@ -129,14 +130,17 @@ class BuildTargetsProvider
         gotline(line)
 
 # first register all classes and later activate it on package activation
-class BuildTargetProviderRegistry
+class BuildSystemRegistry
   constructor: ->
     @registry = []
     @containers = []
     @buildsystems = []
 
   register: (thing) ->
-    if thing instanceof BuildSystem
+    if thing instanceof Array
+      for x in thing
+        @register x
+    else if thing instanceof BuildSystem
       @buildsystems.push thing
     else
       @registry.push thing
@@ -160,11 +164,11 @@ class BuildSystem
   constructor: (opts) ->
 
     # sublime text opts (see http://sublime-text-unofficial-documentation.readthedocs.org/en/latest/reference/build_systems.html)
-    {@file_regex, @cmd, @selector, @line_regex, @working_dir} = opts
+    {file_regex, @cmd, @selector, line_regex, @working_dir} = opts
     {@encoding, @env, @shell, @path, @syntax} = opts
 
     # atom's protocol opts
-    {@args, @cwd, @builder, @build} = opts
+    {@args, @cwd, @builder, @build, @resultRegexes, @highlight} = opts
 
     if @cmd instanceof Array
       @args = cmd[1..]
@@ -176,7 +180,23 @@ class BuildSystem
     if !@build
       @build = => @builder.startNewBuild this
 
+    if !@resultRegexes
+      # fill in some defaults
+      @resultRegexes = [
+        { file_regex: /^(.*)\((\d+)\)\s*:\s*(?:warning|error)\s*/ } # VS C++
+        { file_regex: /^\s+File "([^"]+)", line (\d+)/ } # Python traceback
+        { file_regex: /^\s+from ([^:]+):(\d+)/ }  # ruby traceback
+        { file_regex: /\([^:]*:(\d+):(\d+)\)$/ }  # javascript traceback
+        { file_regex: /([^:]*):(\d+):(\d+)/ }  # general
+      ]
+
+    if file_regex and line_regex
+      @resultRegexes = [ {file_regex: file_regex, line_regex: line_regex} ]
+
+    else if file_regex
+      @resultRegexes = [ {file_regex: file_regex} ]
+
 module.exports =
-  BuildTargets: BuildTargets
-  buildRegistry: new BuildTargetsRegistry()
+  BuildCommandProvider: BuildCommandProvider
+  buildSystemRegistry: new BuildSystemRegistry()
   BuildSystem: BuildSystem
