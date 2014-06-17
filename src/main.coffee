@@ -20,6 +20,8 @@ class BuildCommandProvider
     @installWatcher()
     @update()
 
+    console.log("root #{@root}")
+
   # installs watch on files in buildFiles
   installWatcher: ->
     if @buildFiles?
@@ -88,12 +90,14 @@ class BuildCommandProvider
 
   # adds command to atom workspace
   addCommand: (name, command) ->
+    console.log("add command")
     @commands[name] = command
     @builder.addCommand name, command
     #@builder.atom.workspaceView.command name, command
 
   # removes command from atom workspace
   removeCommand: (name) ->
+    console.log("remove command")
     if @commands[name]
       @builder.removeCommand name
 
@@ -131,23 +135,20 @@ class BuildCommandProvider
 
 # first register all classes and later activate it on package activation
 class BuildSystemRegistry
-  constructor: ->
+  constructor: (@builder) ->
     @registry = []
-    @containers = []
     @buildsystems = []
+    @containers = []
 
   register: (thing) ->
     if thing instanceof Array
       for x in thing
         @register x
     else if thing instanceof BuildSystem
-      @buildsystems.push thing
-    else
+      @buildsystems.push thing if not (thing in @buildsystems)
+    else if not (thing in @registry)
       @registry.push thing
-
-  activate: (builder) ->
-    for buildTargetsProvider in @registry
-      @containers.push new buildTargetsProvider(builder)
+      @containers.push new thing(@builder)
 
 ###
 This class is passed as opts to builder's startNewBuild function
@@ -198,5 +199,5 @@ class BuildSystem
 
 module.exports =
   BuildCommandProvider: BuildCommandProvider
-  buildSystemRegistry: new BuildSystemRegistry()
+  BuildSystemRegistry: BuildSystemRegistry
   BuildSystem: BuildSystem
